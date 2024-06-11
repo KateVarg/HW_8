@@ -10,10 +10,10 @@ class TestProducts:
     def test_product_check_quantity(self, product_1):
         # TODO напишите проверки на метод check_quantity
         request_quantity = product_1.quantity
-        assert product_1.check_quantity(request_quantity) is True # на складе есть весь товар
-        assert product_1.check_quantity(request_quantity - 1) is True # на складе есть на единицу товара меньше
-        assert product_1.check_quantity(request_quantity + 1) is False # на складе нет товара на единицу больше
-        assert product_1.check_quantity(request_quantity // 2) is True # на складе есть примерно половина товара
+        assert product_1.check_quantity(request_quantity) is True  # на складе есть весь товар
+        assert product_1.check_quantity(request_quantity - 1) is True  # на складе есть на единицу товара меньше
+        assert product_1.check_quantity(request_quantity + 1) is False  # на складе нет товара на единицу больше
+        assert product_1.check_quantity(request_quantity // 2) is True  # на складе есть примерно половина товара
 
     def test_product_buy(self, product_1):
         # TODO напишите проверки на метод buy
@@ -43,7 +43,8 @@ class TestCart:
         cart.add_product(product_2, 1)
 
         assert product_1 and product_2 in cart.products
-        assert cart.products[product_1, product_2] == 3
+        assert cart.products[product_1] == 2
+        assert cart.products[product_2] == 1
 
     def test_remove_product(self, cart, product_1, product_2):
         cart.add_product(product_1, 2)
@@ -57,17 +58,28 @@ class TestCart:
 
         assert cart.products[product_2] == 8
 
-    def test_clear(self, cart):
-        assert cart.clear()
+    def test_clear(self, cart, product_1):
+        cart.add_product(product_1, 5)
+        cart.clear()
 
-    def test_get_total_price(self, cart, product_1 , product_2):
+        assert cart.products == {}
+
+    def test_get_total_price(self, cart, product_1, product_2):
         cart.add_product(product_1, 67)
-        cart.add_product(product_2, 78)
+        assert cart.get_total_price(product_1) == product_1.price * 67
 
-        assert sum(product_1.quantity * product_1.price + product_2.quantity * product_2.price) == cart.total_price
+    def test_buy(self, cart, product_1, product_2):
+        cart.add_product(product_1, 67)
+        cart.add_product(product_2, 33)
+        cart.buy()
 
-    def test_buy(self, cart, product_1):
-        total_count = 70
-        cart.buy(total_count)
+        assert product_1.quantity == 933
+        assert product_2.quantity == 567
+        assert cart.products == {}
 
-        assert product_1.quantity == product_1.quantity - total_count
+    def test_buy_more_than_available(self, cart, product_1, product_2):
+        cart.add_product(product_1, 1067)
+
+        with pytest.raises(ValueError):
+            cart.buy()
+
